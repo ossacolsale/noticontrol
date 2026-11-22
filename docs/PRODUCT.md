@@ -1,0 +1,29 @@
+# NotiControl — Macro guida
+
+## Obiettivo e priorità
+
+Realizza un'app Android nativa che riduca i passaggi per consultare, raggruppare e modificare le impostazioni di notifica di più app. Usa le impostazioni persistenti del sistema. L'app funziona offline, senza root, account, tracker, telemetria o server. Shizuku resta opzionale. La direttiva di efficienza prevale su ampiezza dei test, documentazione e architettura. Le verifiche essenziali di sicurezza, integrità e correttezza restano obbligatorie.
+
+Procedi con progetto compilabile, inventario, ricerca, filtri e selezione, lettura autorizzata, raggruppamento dei suoni, operazioni native fattibili, quindi verifica finale. Sviluppa il primo incremento utilizzabile anche se capacità privilegiate, ripristino avanzato, profili di lavoro o integrazioni OEM richiedono verifiche successive.
+
+## Capacità e modello
+
+- Prima delle funzioni privilegiate consulta documentazione ufficiale e AOSP quanto basta per una decisione. Verifica `NotificationManager`, `NotificationListenerService`, lettura e aggiornamento di canali e gruppi per package e utente, companion reali, Notification Assistant, stato globale e `POST_NOTIFICATIONS`, Package Visibility e restrizioni Play, intent nativi, Shizuku e differenze Samsung. Registra le conclusioni essenziali in `docs/FEASIBILITY.md`.
+- Il rilevamento dinamico distingue API pubbliche, listener, privilegi aggiuntivi, Shizuku e operazioni dipendenti da OEM o indisponibili. Lettura delle notifiche ricevute e accesso alle impostazioni sono capacità diverse. Un listener raccoglie esclusivamente metadati indispensabili, se serve. Evita associazioni companion fittizie, automazione con AccessibilityService e uso di API nascoste o permessi signature come capacità ordinarie.
+- Inventaria i package visibili con icona, nome, filtro opzionale per app di sistema, stato globale se conoscibile, conteggi di canali e riepilogo dei suoni. Identifica app attive, parziali, disattivate globalmente, con tutti i canali disattivati e da verificare. Una lista vuota, l'accesso negato e un blocco sono situazioni distinte. Distingui canali e app per profilo quando il backend supporta più profili.
+- Raggruppa i canali per URI normalizzato, con categorie per predefinito, nessun suono e non determinabile. Mostra suoni misti per app se gli URI differiscono. Gestisci URI mancanti o illeggibili senza accorpare suoni per il solo titolo.
+
+## Interfaccia e operazioni
+
+- Due sezioni Material 3, **App** e **Suoni**, con tema chiaro/scuro, colori dinamici dove disponibili, testi italiani con risorse inglesi e supporto a font grandi. Usa righe compatte, icone e stati leggibili senza dipendere dal colore. Rendi raggiungibili le azioni principali anche con una mano.
+- In **App** mostra ricerca, filtri Tutte, Attive, Parziali, Disattivate e Da verificare con conteggi, elenco e dettaglio canali. In **Suoni** mostra gruppi espandibili con app e canali. Prevedi vuoto, caricamento, errore e capacità mancanti. Conserva filtri, ordinamento e preferenze.
+- Supporta selezione singola e multipla, tutti gli elementi visibili e, quando accessibili, singoli canali anche di app diverse. Mantieni la selezione al riordino e applica azioni solo al sottoinsieme visibile mostrato nel riepilogo. Mostra la barra contestuale e le sole azioni effettivamente disponibili.
+- Supporta sul dispositivo abilitazione o blocco globale e per canale, silenziamento, modifica collettiva via selettore Android e ripristino se i relativi privilegi sono accertati. Prima di scrivere mostra obiettivo, conteggi ed esclusioni e richiedi una conferma. Preserva attributi estranei alla modifica, compresi vibrazione e importanza durante un cambio di suono. Dopo ogni scrittura rileggi e distingui esito verificato, errore ed esito non verificabile. Salva lo snapshot locale prima di scrivere e segnala modifiche successive prima di ripristinare.
+- Se manca una capacità, offri subito l'intent alle impostazioni native più specifico disponibile. Una sequenza di aperture delle impostazioni resta un'operazione guidata manuale. Gestisci errori, app rimosse e autorizzazioni revocate.
+
+## Sviluppo e accettazione
+
+- Preferisci un modulo Kotlin, Compose, Material 3 e Gradle Kotlin DSL. Separa UI e stato, classificazione e accesso Android. Usa coroutine e ViewModel per il flusso asincrono, preferenze locali leggere e storage strutturato per snapshot solo se necessario. Isola adattamenti Samsung e backend privilegiati quando esiste un caso reale. Parti da minSdk 26, usa SDK stabili compatibili con la toolchain e documenta eventuali scostamenti.
+- Il primo incremento deve avviarsi, mostrare le app visibili, cercare, filtrare e selezionare, distinguere i dati sconosciuti, mostrare i canali e i suoni autorizzati e rendere disponibili le operazioni native realizzabili. Una mutazione può risultare riuscita solo dopo rilettura. Su Android standard e Samsung, un'operazione bloccata deve avere un limite chiaro e un percorso manuale praticabile.
+- Esegui test mirati per classificazione, selezione e operazioni collettive realizzate, comprese eventuali scritture e conflitti di ripristino. Al termine verifica compilazione e lint disponibili. Registra le prove in modo conciso e genera un APK debug se possibile. Su Android 13–17 e Galaxy A34 5G verifica solo i dispositivi disponibili. Prima del test del Galaxy annota le versioni Android e One UI osservate. Controlla i percorsi delle categorie, permessi, profili, URI non leggibili e persistenza quando pertinenti.
+- Documenta installazione sul Galaxy A34 nel README, fattibilità nelle note tecniche, confini architetturali e prove nei documenti pertinenti. Indica cosa funziona, quali autorizzazioni servono, quali prove richiedono hardware e quali operazioni eccedono i privilegi disponibili.
