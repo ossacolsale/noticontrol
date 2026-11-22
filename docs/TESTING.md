@@ -10,7 +10,8 @@ I test JVM coprono priorità del blocco globale, canali mancanti, stati sintetic
 
 - **Superati** — compilazione e lint con JDK 17 e SDK 36. Lint con 0 errori e 15 avvisi per versioni, visibilità limitata dei package e suggerimenti KTX. Sette test JVM superati.
 - **Superata** — prova su emulatore Android 11, API 30. Installazione, avvio a freddo, ricerca, filtro, selezione dopo riordino, apertura guidata di due pagine notifiche distinte, percorso di ritorno, stato vuoto di **Suoni** e inclusione delle app di sistema. La prova ha aperto le pagine senza cambiare impostazioni di notifica. L'APK finale si è avviato conservando la preferenza per le app di sistema.
-- **Non eseguiti** — Android 13–17, Galaxy A34 e One UI, cambio e rilettura del permesso runtime, pagine dei canali altrui, suoni non leggibili su hardware e profili di lavoro.
+- **Osservato su Galaxy A34 5G** — Android 16, API 36, proprietà One UI `80500`. Due app con `POST_NOTIFICATIONS` concesso comparivano entrambe come **Da verificare**. Per la prima, le impostazioni native mostravano il consenso attivo e tre categorie visibili abilitate. Per la seconda, One UI mostrava il consenso spento e un avviso di sospensione avanzata. La sezione **Suoni** di NotiControl risultava vuota. Nel log recente del processo, durante la consultazione, erano assenti indicatori di crash o diniego di accesso.
+- **Non eseguiti** — Android 13, 14, 15 e 17, cambio e rilettura del permesso runtime, verifica degli URI delle suonerie e profili di lavoro.
 
 ## Prova su dispositivo
 
