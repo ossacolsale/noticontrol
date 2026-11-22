@@ -59,4 +59,12 @@
         <item quantity="one">%d selezionato</item>
         <item quantity="other">%d selezionati</item>
     </plurals>
+    <string name="filter_permitted">Permesso consentito</string>
+    <string name="observed_help">Canali delle notifiche in corso al momento della lettura. Aggiorna per rileggere i suoni.</string>
+    <string name="access_help">Per vedere i suoni delle notifiche in corso, puoi concedere a NotiControl l’accesso alle notifiche. L’app usa solo i dati dei canali, in memoria.</string>
+    <string name="listener_settings">Apri accesso alle notifiche</string>
+    <string name="no_access_screen">Schermata di accesso non disponibile</string>
+    <string name="observed_count">Canali osservati %1$d</string>
+    <string name="app_inactive">App sospesa o disabilitata · Da verificare</string>
+    <string name="observed_channel">Canale osservato</string>
 </resources>

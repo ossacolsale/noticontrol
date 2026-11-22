@@ -4,13 +4,14 @@ enum class GlobalStatus(val allowed: Boolean?) {
     ENABLED(true), BLOCKED(false), PERMISSION_GRANTED(true), PERMISSION_DENIED(false), UNKNOWN(null)
 }
 
-enum class AppStatus { ACTIVE, PARTIAL, BLOCKED, CHANNELS_BLOCKED, UNKNOWN }
+enum class AppStatus { PERMISSION_ONLY, ACTIVE, PARTIAL, BLOCKED, CHANNELS_BLOCKED, UNKNOWN }
 
 enum class AppFilter {
-    ALL, ACTIVE, PARTIAL, DISABLED, UNKNOWN;
+    ALL, PERMITTED, ACTIVE, PARTIAL, DISABLED, UNKNOWN;
 
     fun matches(status: AppStatus) = when (this) {
         ALL -> true
+        PERMITTED -> status == AppStatus.PERMISSION_ONLY
         ACTIVE -> status == AppStatus.ACTIVE
         PARTIAL -> status == AppStatus.PARTIAL
         DISABLED -> status == AppStatus.BLOCKED || status == AppStatus.CHANNELS_BLOCKED
@@ -30,6 +31,7 @@ data class ChannelEntry(
     val active: Boolean,
     val sound: SoundKey,
     val soundTitle: String? = null,
+    val observed: Boolean = false,
 )
 
 data class AppEntry(
@@ -38,11 +40,16 @@ data class AppEntry(
     val system: Boolean,
     val globalStatus: GlobalStatus,
     val channels: List<ChannelEntry>?,
+    val observedOnly: Boolean = false,
+    val appUnavailable: Boolean = false,
 ) {
     val target get() = SettingsTarget(packageName)
     val activeChannels = channels?.count { it.active }
     val status = when {
         globalStatus.allowed == false -> AppStatus.BLOCKED
+        appUnavailable -> AppStatus.UNKNOWN
+        observedOnly && globalStatus == GlobalStatus.PERMISSION_GRANTED -> AppStatus.PERMISSION_ONLY
+        observedOnly -> AppStatus.UNKNOWN
         channels.isNullOrEmpty() -> AppStatus.UNKNOWN
         activeChannels == 0 -> AppStatus.CHANNELS_BLOCKED
         globalStatus.allowed != true -> AppStatus.UNKNOWN

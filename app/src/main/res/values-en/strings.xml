@@ -59,4 +59,12 @@
         <item quantity="one">%d selected</item>
         <item quantity="other">%d selected</item>
     </plurals>
+    <string name="filter_permitted">Permission granted</string>
+    <string name="observed_help">Channels of notifications present at the last refresh. Refresh to read their sounds again.</string>
+    <string name="access_help">To see sounds for current notifications, you can grant notification access. The app uses channel metadata in memory.</string>
+    <string name="listener_settings">Open notification access</string>
+    <string name="no_access_screen">Notification access settings unavailable</string>
+    <string name="observed_count">Observed channels %1$d</string>
+    <string name="app_inactive">Suspended or disabled app · Unknown</string>
+    <string name="observed_channel">Observed channel</string>
 </resources>

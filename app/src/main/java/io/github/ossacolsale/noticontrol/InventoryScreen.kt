@@ -69,6 +69,7 @@ private enum class Section { APPS, SOUNDS }
 internal fun InventoryScreen(
     model: InventoryViewModel,
     openSettings: (SettingsTarget) -> OpenResult,
+    listenerSettings: () -> Unit,
 ) {
     val state by model.state.collectAsStateWithLifecycle()
     val keyboard = LocalSoftwareKeyboardController.current
@@ -226,13 +227,20 @@ internal fun InventoryScreen(
                         }
                     }
                 }
-                else -> SoundsList(
-                    groups, expanded, selecting, selected,
-                    showEmpty = !state.loading && !state.error,
-                    expand = { expanded = expanded.toggle(it) },
-                    open = ::openOne,
-                    select = ::toggleSelection,
-                )
+                else -> Column {
+                    Text(stringResource(if (state.listening) R.string.observed_help else R.string.access_help),
+                        Modifier.padding(horizontal = 16.dp), style = MaterialTheme.typography.bodySmall)
+                    TextButton(onClick = if (state.listening) model::refresh else listenerSettings) {
+                        Text(stringResource(if (state.listening) R.string.refresh else R.string.listener_settings))
+                    }
+                    SoundsList(
+                        groups, expanded, selecting, selected,
+                        showEmpty = !state.loading && !state.error,
+                        expand = { expanded = expanded.toggle(it) },
+                        open = ::openOne,
+                        select = ::toggleSelection,
+                    )
+                }
             }
         }
     }
@@ -325,6 +333,7 @@ private fun AppFilters(apps: List<AppEntry>, current: AppFilter, onFilter: (AppF
         items(AppFilter.entries) { filter ->
             val label = stringResource(
                 when (filter) {
+                    AppFilter.PERMITTED -> R.string.filter_permitted
                     AppFilter.ALL -> R.string.filter_all
                     AppFilter.ACTIVE -> R.string.status_active
                     AppFilter.PARTIAL -> R.string.filter_partial
@@ -356,6 +365,7 @@ private fun AppDetail(
                 Text(appSubtitle(app))
                 TextButton(onClick = { open(app.target) }) { Text(stringResource(R.string.open_app_settings)) }
                 when {
+                    app.observedOnly && !app.channels.isNullOrEmpty() -> Text(stringResource(R.string.observed_help))
                     app.channels == null -> Text(stringResource(R.string.channels_unavailable))
                     app.channels.isEmpty() -> Text(stringResource(R.string.no_channels))
                 }
@@ -412,7 +422,11 @@ private fun ChannelRow(
     select: (SettingsTarget) -> Unit,
     open: (SettingsTarget) -> Unit,
 ) {
-    val status = stringResource(if (channel.active) R.string.channel_active else R.string.channel_blocked)
+    val status = stringResource(when {
+        channel.observed -> R.string.observed_channel
+        channel.active -> R.string.channel_active
+        else -> R.string.channel_blocked
+    })
     EntryRow(
         name, stringResource(R.string.join_details, status, soundTitle(channel.sound, channel.soundTitle)),
         selecting, channel.target in selected,
@@ -516,6 +530,7 @@ private fun Note(@StringRes text: Int, error: Boolean = false) {
 private fun appSubtitle(app: AppEntry): String {
     val status = stringResource(
         when (app.status) {
+            AppStatus.PERMISSION_ONLY -> R.string.filter_permitted
             AppStatus.ACTIVE -> R.string.status_active
             AppStatus.PARTIAL -> R.string.status_partial
             AppStatus.BLOCKED -> R.string.status_blocked
@@ -524,15 +539,17 @@ private fun appSubtitle(app: AppEntry): String {
         },
     )
     val permissionText = when (app.globalStatus) {
-        GlobalStatus.PERMISSION_GRANTED -> stringResource(R.string.permission_allowed)
+        GlobalStatus.PERMISSION_GRANTED -> if (app.status == AppStatus.PERMISSION_ONLY) null else stringResource(R.string.permission_allowed)
         GlobalStatus.PERMISSION_DENIED -> stringResource(R.string.permission_denied)
         else -> null
     }
+    if (app.appUnavailable && app.status == AppStatus.UNKNOWN) return stringResource(R.string.app_inactive)
     val channels = app.channels
     if (channels.isNullOrEmpty()) {
         return permissionText?.let { stringResource(R.string.join_details, status, it) } ?: status
     }
-    val counts = stringResource(R.string.channel_summary, app.activeChannels!!, channels.size)
+    val counts = if (app.observedOnly) stringResource(R.string.observed_count, channels.size)
+    else stringResource(R.string.channel_summary, app.activeChannels!!, channels.size)
     val sounds = channels.map { it.sound }.distinct()
     val sound = if (sounds.size > 1) stringResource(R.string.mixed_sounds)
     else soundTitle(sounds.single(), channels.firstNotNullOfOrNull { it.soundTitle })

@@ -40,17 +40,20 @@ internal class CapabilityDetector(private val context: Context) {
         } else {
             emptySet()
         }
-        return manager.notificationChannels.map { channel ->
-            val sound = readSound(channel)
-            ChannelEntry(
-                target = SettingsTarget(packageName, channel.id),
-                name = channel.name?.toString().orEmpty().ifBlank { channel.id },
-                active = channel.importance > NotificationManager.IMPORTANCE_NONE &&
-                    channel.group !in blockedGroups,
-                sound = sound.first,
-                soundTitle = sound.second,
-            )
-        }
+        return manager.notificationChannels.map { channel -> entry(packageName, channel, channel.group in blockedGroups) }
+    }
+
+    fun entry(packageName: String, channel: NotificationChannel, groupBlocked: Boolean?): ChannelEntry {
+        val sound = readSound(channel)
+        return ChannelEntry(
+            target = SettingsTarget(packageName, channel.id),
+            name = channel.name?.toString().orEmpty().ifBlank { channel.id },
+            active = channel.importance > NotificationManager.IMPORTANCE_NONE &&
+                groupBlocked != true,
+            sound = sound.first,
+            soundTitle = sound.second,
+            observed = groupBlocked == null,
+        )
     }
 
     private fun readSound(channel: NotificationChannel): Pair<SoundKey, String?> {
@@ -58,7 +61,7 @@ internal class CapabilityDetector(private val context: Context) {
         if (uri == RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION)) {
             return SoundKey(SoundKind.DEFAULT) to null
         }
-        val title = if (uri.scheme == "content") readSoundTitle(uri) else null
+        val title = if (uri.scheme == "content" && uri.authority == "media") readSoundTitle(uri) else null
         return SoundKey(SoundKind.CUSTOM, uri.toString()) to title
     }
 
@@ -77,7 +80,7 @@ internal class AndroidInventory(private val context: Context) {
     private val capabilities = CapabilityDetector(context)
 
     @Suppress("DEPRECATION")
-    fun read(): List<AppEntry> {
+    fun read(listener: ChannelListener?): List<AppEntry> {
         val packages = context.packageManager
         val installed = if (Build.VERSION.SDK_INT >= 33) {
             packages.getInstalledPackages(
@@ -86,6 +89,7 @@ internal class AndroidInventory(private val context: Context) {
         } else {
             packages.getInstalledPackages(0)
         }
+        val observed = listener?.channels().orEmpty()
         val collator = Collator.getInstance(context.resources.configuration.locales[0])
         return installed.mapNotNull { info ->
             val application = info.applicationInfo ?: return@mapNotNull null
@@ -110,7 +114,17 @@ internal class AndroidInventory(private val context: Context) {
                 system = application.flags and
                     (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0,
                 globalStatus = status,
-                channels = channels,
+                channels = channels ?: observed[info.packageName]?.map { channel ->
+                    capabilities.entry(info.packageName, channel, groupBlocked = null)
+                },
+                observedOnly = info.packageName != context.packageName,
+                appUnavailable = !application.enabled || application.flags and ApplicationInfo.FLAG_SUSPENDED != 0 ||
+                    try {
+                        packages.getApplicationEnabledSetting(info.packageName) ==
+                            PackageManager.COMPONENT_ENABLED_STATE_DISABLED_UNTIL_USED
+                    } catch (_: IllegalArgumentException) {
+                        true
+                    },
             )
         }.sortedWith { first, second ->
             collator.compare(first.name, second.name).takeIf { it != 0 }

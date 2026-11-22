@@ -1,5 +1,9 @@
 package io.github.ossacolsale.noticontrol
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.provider.Settings
+import android.widget.Toast
 import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -33,7 +37,13 @@ class MainActivity : ComponentActivity() {
             }
             MaterialTheme(colorScheme = colors) {
                 LifecycleEventEffect(Lifecycle.Event.ON_RESUME) { model.refresh() }
-                InventoryScreen(model, ::openNativeSettings)
+                InventoryScreen(model, ::openNativeSettings) {
+                    try {
+                        startActivity(Intent(Settings.ACTION_NOTIFICATION_LISTENER_SETTINGS))
+                    } catch (_: ActivityNotFoundException) {
+                        Toast.makeText(this, R.string.no_access_screen, Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
     }

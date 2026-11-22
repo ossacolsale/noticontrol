@@ -13,6 +13,7 @@ import kotlinx.coroutines.withContext
 
 internal data class InventoryState(
     val apps: List<AppEntry> = emptyList(),
+    val listening: Boolean = false,
     val loading: Boolean = true,
     val error: Boolean = false,
     val filter: AppFilter = AppFilter.ALL,
@@ -34,20 +35,27 @@ internal class InventoryViewModel(application: Application) : AndroidViewModel(a
     val state = mutableState.asStateFlow()
     private var scan: Job? = null
 
+    init {
+        viewModelScope.launch {
+            ChannelListener.connection.collect { refresh() }
+        }
+    }
+
     fun refresh() {
         scan?.cancel()
         scan = viewModelScope.launch {
             mutableState.update { it.copy(loading = true, error = false) }
+            val listener = ChannelListener.connection.value
             val apps = withContext(Dispatchers.IO) {
                 try {
-                    inventory.read()
+                    inventory.read(listener)
                 } catch (_: SecurityException) {
                     null
                 }
             }
             mutableState.update {
-                if (apps == null) it.copy(loading = false, error = true)
-                else it.copy(apps = apps, loading = false, error = false)
+                if (apps == null) it.copy(apps = emptyList(), listening = false, loading = false, error = true)
+                else it.copy(apps = apps, listening = listener != null, loading = false, error = false)
             }
         }
     }

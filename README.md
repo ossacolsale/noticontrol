@@ -2,7 +2,7 @@
 
 App Android offline per consultare le impostazioni di notifica delle app visibili e raggiungere rapidamente i comandi di Android. Funziona senza root, Shizuku, accesso alle notifiche o permessi aggiuntivi.
 
-In **App** puoi cercare, filtrare e selezionare più app. **Apri impostazioni** avvia un percorso guidato con una pagina Android per app. Applica le modifiche in Android, torna a NotiControl e tocca **Apri successiva**. La vista **Suoni** raggruppa per URI i canali letti con le autorizzazioni disponibili. Con le API standard, i canali delle altre app si consultano dalle rispettive impostazioni Android. Le modifiche collettive automatiche e il ripristino richiedono un backend privilegiato verificato, assente in questa versione.
+In **App** puoi cercare, filtrare e selezionare più app. **Apri impostazioni** avvia un percorso guidato con una pagina Android per app. Applica le modifiche in Android, torna a NotiControl e tocca **Apri successiva**. La vista **Suoni** raggruppa per URI i canali letti con le autorizzazioni disponibili. Da **Suoni → Apri accesso alle notifiche** puoi autorizzare il rilevamento facoltativo dei canali usati dalle notifiche attualmente presenti. **Aggiorna elenco** rilegge il profilo corrente. I risultati vivono in memoria. Per vedere anche le categorie inattive apri le impostazioni native dell’app. Il filtro **Permesso consentito** identifica le app abilitate con permesso concesso e inventario dei canali incompleto. Le modifiche collettive automatiche e il ripristino richiedono un backend privilegiato verificato, assente in questa versione.
 
 ## Build e installazione
 

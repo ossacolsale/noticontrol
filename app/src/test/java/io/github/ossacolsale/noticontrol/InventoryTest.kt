@@ -67,6 +67,15 @@ class InventoryTest {
         assertEquals(finished, finished.record(OpenResult.SPECIFIC))
     }
 
+    @Test
+    fun observedChannelsDoNotProveTheWholeAppIsActiveOrBlocked() {
+        val observed = app(GlobalStatus.PERMISSION_GRANTED, listOf(channel("known"))).copy(observedOnly = true)
+        assertEquals(AppStatus.PERMISSION_ONLY, observed.status)
+        assertEquals(AppStatus.PERMISSION_ONLY, observed.copy(channels = listOf(channel("off", false))).status)
+        assertEquals(AppStatus.UNKNOWN, observed.copy(appUnavailable = true).status)
+        assertEquals(AppStatus.BLOCKED, observed.copy(globalStatus = GlobalStatus.PERMISSION_DENIED).status)
+    }
+
     private fun app(status: GlobalStatus, channels: List<ChannelEntry>?) =
         AppEntry("example.app", "Example", false, status, channels)
 
