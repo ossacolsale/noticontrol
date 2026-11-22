@@ -1,5 +1,18 @@
 # Fattibilità
 
+## Motivi dell’archiviazione
+
+L’obiettivo era offrire un’app installabile sui comuni telefoni Android che mostrasse tutte le categorie di notifica delle altre app, anche quelle senza notifiche in corso, e permettesse di modificarne suoni e stato in blocco. Android richiede privilegi ulteriori per l’inventario completo e l’aggiornamento dei canali altrui. [API Android del listener](https://developer.android.com/reference/android/service/notification/NotificationListenerService)
+
+- Sul Galaxy A34 con Android 16, due app con lo stesso permesso di notifica concesso mostravano stati diversi nelle impostazioni Samsung. Il permesso da solo lascia quindi alcuni stati da verificare. [Prova su dispositivo](TESTING.md)
+- Con l’accesso facoltativo alle notifiche, la vista **Suoni** legge al momento dell’aggiornamento i canali delle notifiche ancora attive nel profilo corrente. Il pannello delle notifiche può essere chiuso. Nella prova con due canali è comparso soltanto quello con una notifica in corso. [Verifica del listener](TESTING.md)
+
+### Condizioni per riprendere
+
+Ha senso rivalutare il progetto se Android rende queste operazioni accessibili con permessi ordinari, oppure se si accetta una configurazione aggiuntiva e una prova su dispositivo dimostra sia la lettura dei canali inattivi sia la modifica collettiva verificabile. Shizuku può essere avviato senza root tramite debug wireless, con riavvio del servizio dopo ogni riavvio del telefono. La disponibilità dei privilegi necessari per entrambe le operazioni sul Galaxy A34 resta da dimostrare. [Guida ufficiale Shizuku](https://shizuku.rikka.app/guide/setup/)
+
+## Capacità del prototipo
+
 | Capacità | Condizioni e comportamento dell'MVP |
 | --- | --- |
 | Inventario | `PackageManager` legge i package visibili nel profilo corrente. Una query per le attività launcher amplia la visibilità su Android 11 e successivi. Le app di sistema visibili si possono includere. L'MVP non richiede `QUERY_ALL_PACKAGES`, soggetto ai [requisiti Google Play](https://support.google.com/googleplay/android-developer/answer/10158779). [Visibilità dei package](https://developer.android.com/training/package-visibility/declaring) |
